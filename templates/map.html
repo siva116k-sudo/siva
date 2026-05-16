@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="map" style="height: 500px;"></div>
+
+  <script>
+    var map = L.map('map').setView([17.3850, 78.4867], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = L.marker([17.3850, 78.4867]).addTo(map);
+
+    // Refresh marker every 2 seconds
+    setInterval(() => {
+      fetch('/data')
+        .then(response => response.json())
+        .then(data => {
+          marker.setLatLng([data.lat, data.lon]);
+          map.setView([data.lat, data.lon], 13);
+        });
+    }, 2000);
+  </script>
+</body>
+</html>

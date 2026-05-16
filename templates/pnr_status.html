@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}PNR Status – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:500px">
+  <h1 class="page-title text-center">🔎 PNR Status</h1>
+  <p class="page-sub text-center">Check booking status — no login required</p>
+  <div class="card">
+    <div class="card-bd">
+      <form method="POST">
+        <div class="fg"><label class="fl">Enter PNR Number</label>
+          <input type="text" name="pnr" class="fc" placeholder="e.g. PNR040641WTCS" style="text-transform:uppercase" value="{{ request.form.get('pnr','') }}" required></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Check Status</button>
+      </form>
+    </div>
+  </div>
+
+  {% if booking %}
+  <div class="tkt-card mt-3">
+    <div class="tkt-hd">
+      <div><div class="tkt-hd-lbl">PNR Result</div><div class="tkt-train-name">{{ train.train_name }}</div></div>
+      <div class="pnr-pill">{{ booking.pnr }}</div>
+    </div>
+    <div class="tkt-details" style="grid-template-columns:1fr 1fr">
+      <div class="tkt-field"><div class="tkt-fl">Route</div><div class="tkt-fv">{{ train.from_station }} → {{ train.to_station }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Journey Date</div><div class="tkt-fv">{{ booking.journey_date }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Passenger</div><div class="tkt-fv">{{ user.username }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Seats</div><div class="tkt-fv">{{ booking.seats }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Amount Paid</div><div class="tkt-fv">₹{{ booking.total_price }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Status</div><div class="tkt-fv"><span class="badge badge-{{ booking.status }}">{{ booking.status.upper() }}</span></div></div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelector('input[name="pnr"]').addEventListener('input',function(){this.value=this.value.toUpperCase();});
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Train Tracking</title>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <style>
+        body{
+            font-family: Arial;
+            padding:20px;
+        }
+
+        .train{
+            border:1px solid #ccc;
+            padding:15px;
+            margin-bottom:10px;
+            border-radius:10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Live Train Tracking</h1>
+
+<div id="trains"></div>
+
+<script>
+
+    const socket = io();
+
+    socket.on("train_update", function(data){
+
+        let div = document.getElementById(data.train_no);
+
+        if(!div){
+
+            div = document.createElement("div");
+
+            div.id = data.train_no;
+
+            div.className = "train";
+
+            document.getElementById("trains").appendChild(div);
+        }
+
+        div.innerHTML = `
+            <h3>${data.train_name} (${data.train_no})</h3>
+
+            <p>Latitude: ${data.lat.toFixed(4)}</p>
+
+            <p>Longitude: ${data.lng.toFixed(4)}</p>
+
+            <p>Speed: ${data.speed} km/h</p>
+
+            <p>Status: ${data.status}</p>
+
+            <p>Updated: ${data.updated}</p>
+        `;
+    });
+
+</script>
+
+</body>
+</html>

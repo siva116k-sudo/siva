@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Register – RailBook{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-hd"><div class="auth-logo">🚆</div><h2>Create Account</h2><p>Join RailBook and start booking</p></div>
+    <div class="auth-bd">
+      <form method="POST">
+        <div class="fg"><label class="fl">Username</label><input type="text" name="username" class="fc" placeholder="Choose a username" required></div>
+        <div class="fg"><label class="fl">Email</label><input type="email" name="email" class="fc" placeholder="your@email.com" required></div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Password</label><input type="password" name="password" class="fc" placeholder="Min 6 characters" required minlength="6"></div>
+          <div class="fg"><label class="fl">Confirm Password</label><input type="password" name="confirm_password" class="fc" placeholder="Repeat password" required></div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-lg btn-block mt-2">Create Account</button>
+      </form>
+      <div class="auth-ft">Already have an account? <a href="{{ url_for('login') }}">Login here</a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

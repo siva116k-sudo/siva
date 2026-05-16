@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Search Trains – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="page-title">🔍 Search Trains</h1>
+
+  <div class="search-form-card">
+    <form method="POST">
+      <div class="search-grid">
+        <div class="fg"><label class="fl">From Station</label><input type="text" name="from_station" class="fc" placeholder="e.g. NDLS" value="{{ from_st }}" style="text-transform:uppercase" required></div>
+        <div class="fg"><label class="fl">To Station</label><input type="text" name="to_station" class="fc" placeholder="e.g. BCT" value="{{ to_st }}" style="text-transform:uppercase" required></div>
+        <div class="fg"><label class="fl">Journey Date</label><input type="date" name="journey_date" class="fc" value="{{ date }}" required></div>
+        <div class="fg"><label class="fl">Return Date</label><input type="date" name="return_date" class="fc" value="{{ return_date }}"></div>
+        <div class="fg"><label class="fl">Train Type</label>
+          <select name="train_type" class="fc">
+            {% for ttype in train_types %}
+            <option value="{{ ttype }}" {% if ttype == train_type %}selected{% endif %}>{{ ttype }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Min Fare</label><input type="number" step="0.01" min="0" name="min_price" class="fc" placeholder="₹0" value="{{ min_price }}"></div>
+        <div class="fg"><label class="fl">Max Fare</label><input type="number" step="0.01" min="0" name="max_price" class="fc" placeholder="₹9999" value="{{ max_price }}"></div>
+        <div class="fg"><label class="fl">Sort By</label>
+          <select name="sort_by" class="fc">
+            {% for value,label in sort_options %}
+            <option value="{{ value }}" {% if value == sort_by %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg" style="grid-column: span 2;"><label class="fl">Train Name / Number</label><input type="text" name="search_query" class="fc" placeholder="e.g. Rajdhani or 12001" value="{{ search_query }}"></div>
+        <button type="submit" class="btn btn-primary btn-lg" style="align-self:flex-end">Search Trains</button>
+      </div>
+    </form>
+    <div class="station-codes">
+      <span class="sc-label">Popular codes:</span>
+      {% for code,name in [('NDLS','New Delhi'),('BCT','Mumbai'),('MAS','Chennai'),('LKO','Lucknow'),('HWH','Howrah'),('BLR','Bengaluru')] %}
+      <span class="sc-badge"><strong>{{ code }}</strong> {{ name }}</span>
+      {% endfor %}
+    </div>
+
+    {% if recent_searches %}
+    <div class="recent-searches" style="margin-top:1.5rem;">
+      <div class="section-sub">Recent searches</div>
+      <div class="search-history-grid" style="display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem;">
+        {% for item in recent_searches %}
+        <a href="{{ url_for('trains') }}?from_station={{ item.from_st|urlencode }}&to_station={{ item.to_st|urlencode }}&journey_date={{ item.journey_date|urlencode }}&train_type={{ item.train_type|urlencode }}&search_query={{ item.search_query|urlencode }}&sort_by={{ item.sort_by|urlencode }}" class="sc-badge" style="cursor:pointer;">{{ item.label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if from_st %}
+  <div class="results-header">
+    {% if results %}
+      🚆 <strong>{{ results|length }}</strong> train(s) found: {{ from_st }} → {{ to_st }}
+      {% if date %} on <strong>{{ date }}</strong>{% endif %}
+    {% else %}
+      <span class="text-danger">No trains found for {{ from_st }} → {{ to_st }}. Try different stations.</span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% for train in results %}
+  <div class="train-card">
+    <div class="train-card-hd">
+      <div>
+        <span class="train-card-name">{{ train.train_name }}</span>
+        <span class="train-card-no">#{{ train.train_no }}</span>
+      </div>
+      <span class="train-type-badge">{{ train.train_type }}</span>
+    </div>
+    <div class="train-card-body">
+      <div class="stn-blk"><div class="stn-code">{{ train.from_station }}</div><div class="stn-time">{{ train.departure }}</div></div>
+      <div class="route-arrow">→</div>
+      <div class="stn-blk"><div class="stn-code">{{ train.to_station }}</div><div class="stn-time">{{ train.arrival }}</div></div>
+      <div class="train-duration">⏱ {{ train.duration }}</div>
+      <div class="train-right">
+        <div class="price-big">₹{{ train.price_per_seat }}</div>
+        <div class="avail-txt {% if train.available_seats > 10 %}green{% elif train.available_seats > 0 %}orange{% else %}red{% endif %}">
+          {% if train.available_seats > 0 %}{{ train.available_seats }} seats available{% else %}FULLY BOOKED{% endif %}
+        </div>
+        <div style="font-size:.8rem;margin:.5rem 0;">
+          <span class="badge {% if train.available_seats > 10 %}badge-confirmed{% elif train.available_seats > 0 %}badge-admin{% else %}badge-cancelled{% endif %}">
+            {% if train.available_seats > 10 %}Available{% elif train.available_seats > 0 %}Limited seats{% else %}Sold out{% endif %}
+          </span>
+        </div>
+        {% if train.available_seats > 0 and date %}
+        <a href="{{ url_for('booking', train_id=train.id) }}?date={{ date }}" class="btn btn-gold mt-1">Select Seats →</a>
+        {% elif train.available_seats == 0 and date %}
+        <a href="{{ url_for('waitlist', train_id=train.id) }}?date={{ date }}" class="btn btn-outline btn-sm mt-1">Join Waitlist</a>
+        {% elif not date %}
+        <div class="text-muted" style="font-size:.8rem">Enter date to book</div>
+        {% else %}
+        <button class="btn btn-outline" disabled>Fully Booked</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if return_results %}
+  <h2 class="section-title mt-3">Return Trains for {{ return_date }}</h2>
+  {% for train in return_results %}
+  <div class="train-card">
+    <div class="train-card-hd">
+      <div>
+        <span class="train-card-name">{{ train.train_name }}</span>
+        <span class="train-card-no">#{{ train.train_no }}</span>
+      </div>
+      <span class="train-type-badge">{{ train.train_type }}</span>
+    </div>
+    <div class="train-card-body">
+      <div class="stn-blk"><div class="stn-code">{{ train.from_station }}</div><div class="stn-time">{{ train.departure }}</div></div>
+      <div class="route-arrow">→</div>
+      <div class="stn-blk"><div class="stn-code">{{ train.to_station }}</div><div class="stn-time">{{ train.arrival }}</div></div>
+      <div class="train-duration">⏱ {{ train.duration }}</div>
+      <div class="train-right">
+        <div class="price-big">₹{{ train.price_per_seat }}</div>
+        <div class="avail-txt {% if train.available_seats > 10 %}green{% elif train.available_seats > 0 %}orange{% else %}red{% endif %}">
+          {% if train.available_seats > 0 %}{{ train.available_seats }} seats available{% else %}FULLY BOOKED{% endif %}
+        </div>
+        <div style="font-size:.8rem;margin:.5rem 0;">
+          <span class="badge {% if train.available_seats > 10 %}badge-confirmed{% elif train.available_seats > 0 %}badge-admin{% else %}badge-cancelled{% endif %}">
+            {% if train.available_seats > 10 %}Available{% elif train.available_seats > 0 %}Limited seats{% else %}Sold out{% endif %}
+          </span>
+        </div>
+        {% if train.available_seats > 0 %}
+        <a href="{{ url_for('booking', train_id=train.id) }}?date={{ return_date }}" class="btn btn-gold mt-1">Book Return →</a>
+        {% else %}
+        <a href="{{ url_for('waitlist', train_id=train.id) }}?date={{ return_date }}" class="btn btn-outline btn-sm mt-1">Join Waitlist</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <h2 class="section-title mt-3">All Available Trains</h2>
+  <div class="all-trains-grid">
+    {% for t in all_trains %}
+    <div class="mini-train-card">
+      <div class="mini-train-hd">{{ t.train_name }}</div>
+      <div class="mini-train-route">{{ t.from_station }} → {{ t.to_station }}</div>
+      <div class="mini-train-meta">
+        <span>{{ t.departure }} – {{ t.arrival }}</span>
+        <span class="price-sm">₹{{ t.price_per_seat }}</span>
+      </div>
+      <div class="mini-train-avail {% if t.available_seats>10 %}green{% elif t.available_seats>0 %}orange{% else %}red{% endif %}">
+        {{ t.available_seats }} / {{ t.total_seats }} seats
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('input[name="from_station"],input[name="to_station"]').forEach(el=>{
+  el.addEventListener('input',()=>el.value=el.value.toUpperCase());
+});
+document.querySelector('input[name="journey_date"]').min=new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

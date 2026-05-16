@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="page-title">👤 My Dashboard</h1>
+  <p class="page-sub">Welcome back, <strong>{{ session.username }}</strong>!</p>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">{{ stats.total }}</div><div class="stat-lbl">Total Bookings</div></div>
+    <div class="stat-card gold"><div class="stat-num">{{ stats.confirmed }}</div><div class="stat-lbl">Confirmed</div></div>
+    <div class="stat-card red"><div class="stat-num">{{ stats.cancelled }}</div><div class="stat-lbl">Cancelled</div></div>
+    <div class="stat-card green"><div class="stat-num">₹{{ "%.0f"|format(stats.spent) }}</div><div class="stat-lbl">Total Spent</div></div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-hd">
+      🎫 My Bookings
+      <a href="{{ url_for('trains') }}" class="btn btn-gold btn-sm" style="float:right">+ New Booking</a>
+    </div>
+    {% if bookings %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>PNR</th><th>Train</th><th>Route</th><th>Date</th><th>Seats</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr>
+            <td><a href="{{ url_for('ticket',pnr=b.pnr) }}" class="pnr-link">{{ b.pnr }}</a></td>
+            <td><strong>{{ b.train_name }}</strong><br><span class="muted">{{ b.train_no }}</span></td>
+            <td>{{ b.from_station }} → {{ b.to_station }}</td>
+            <td>{{ b.journey_date }}</td>
+            <td><span class="seat-pill">{{ b.seats }}</span></td>
+            <td><strong>₹{{ b.total_price }}</strong></td>
+            <td><span class="badge badge-{{ b.status }}">{{ b.status.upper() }}</span></td>
+            <td>
+              <div class="action-btns">
+                <a href="{{ url_for('ticket',pnr=b.pnr) }}" class="btn btn-primary btn-sm">View</a>
+                <a href="{{ url_for('download',pnr=b.pnr) }}" class="btn btn-outline btn-sm">PDF</a>
+                {% if b.status=='confirmed' %}
+                <form method="POST" action="{{ url_for('cancel',pnr=b.pnr) }}" onsubmit="return confirm('Cancel booking {{ b.pnr }}?')">
+                  <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎫</div>
+      <h3>No bookings yet</h3>
+      <p>You haven't booked any tickets. Start your journey!</p>
+      <a href="{{ url_for('trains') }}" class="btn btn-gold btn-lg mt-2">Search Trains</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

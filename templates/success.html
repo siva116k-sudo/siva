@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:600px;text-align:center">
+  <div class="result-icon success-icon">✅</div>
+  <h1 style="color:var(--green);margin:.5rem 0">Booking Confirmed!</h1>
+  <p style="color:var(--muted)">Your ticket has been booked successfully.</p>
+
+  <div class="pnr-banner">
+    <div class="pnr-label">Your PNR Number</div>
+    <div class="pnr-big">{{ booking.pnr }}</div>
+    <div class="pnr-sub">Save this for future reference</div>
+  </div>
+
+  <div class="confirm-details">
+    <div class="cd-row"><span>Train</span><span>{{ train.train_name }}</span></div>
+    <div class="cd-row"><span>Route</span><span>{{ train.from_station }} → {{ train.to_station }}</span></div>
+    <div class="cd-row"><span>Date</span><span>{{ booking.journey_date }}</span></div>
+    <div class="cd-row"><span>Seats</span><span>{{ booking.seats }}</span></div>
+    <div class="cd-row"><span>Amount Paid</span><span><strong>₹{{ booking.total_price }}</strong></span></div>
+    <div class="cd-row"><span>Transaction ID</span><span class="mono">{{ booking.transaction_id }}</span></div>
+  </div>
+
+  <div class="confirm-actions">
+    <a href="{{ url_for('ticket',pnr=booking.pnr) }}" class="btn btn-primary btn-lg">🎫 View Ticket</a>
+    <a href="{{ url_for('download',pnr=booking.pnr) }}" class="btn btn-gold btn-lg">⬇️ Download PDF</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-lg">My Bookings</a>
+  </div>
+  <p style="color:var(--muted);font-size:.85rem;margin-top:1rem">📧 Ticket details have been emailed to you.</p>
+</div>
+{% endblock %}

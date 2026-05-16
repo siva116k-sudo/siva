@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Ticket {{ booking.pnr }} – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:680px">
+  <div class="ticket-actions">
+    <div>
+      <h1 class="page-title">🎫 Your Ticket</h1>
+      <p class="page-sub">Show this at the station or download PDF</p>
+    </div>
+    <div class="action-btns">
+      <a href="{{ url_for('download',pnr=booking.pnr) }}" class="btn btn-primary">⬇️ Download PDF</a>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline">My Bookings</a>
+    </div>
+  </div>
+
+  <div class="tkt-card">
+    <div class="tkt-hd">
+      <div>
+        <div class="tkt-hd-lbl">Booking Confirmed</div>
+        <div class="tkt-train-name">{{ train.train_name }}</div>
+        <div class="tkt-train-sub">Train No: {{ train.train_no }} · {{ train.train_type }}</div>
+      </div>
+      <div class="pnr-pill">{{ booking.pnr }}</div>
+    </div>
+
+    <div class="tkt-route">
+      <div class="tkt-stn"><div class="tkt-stn-code">{{ train.from_station }}</div><div class="tkt-stn-time">{{ train.departure }}</div></div>
+      <div class="tkt-arrow-wrap"><div class="tkt-arrow-line"></div><span class="tkt-train-icon">🚂</span><div class="tkt-arrow-line"></div></div>
+      <div class="tkt-stn tkt-stn-right"><div class="tkt-stn-code">{{ train.to_station }}</div><div class="tkt-stn-time">{{ train.arrival }}</div></div>
+    </div>
+
+    <div class="tkt-perf"></div>
+
+    <div class="tkt-details">
+      <div class="tkt-field"><div class="tkt-fl">Passenger</div><div class="tkt-fv">{{ booking.passenger_name or user.username }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Seat Class</div><div class="tkt-fv">{{ booking.seat_class or 'Sleeper' }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Journey Date</div><div class="tkt-fv">{{ booking.journey_date }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Seats</div><div class="tkt-fv">{{ booking.seats }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Total Paid</div><div class="tkt-fv price">₹{{ booking.total_price }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Transaction ID</div><div class="tkt-fv mono">{{ booking.transaction_id }}</div></div>
+      <div class="tkt-field"><div class="tkt-fl">Status</div><div class="tkt-fv"><span class="badge badge-{{ booking.status }}">{{ booking.status.upper() }}</span></div></div>
+    </div>
+
+    <div class="tkt-footer">
+      <div class="tkt-footer-txt">Computer-generated ticket · Carry valid photo ID</div>
+      <span class="badge badge-{{ booking.status }}">{{ booking.status.upper() }}</span>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--muted);font-size:.85rem;margin-top:1rem">
+    Booked on: {{ booking.booked_at }} · 📧 Emailed to {{ user.email }}
+  </p>
+</div>
+{% endblock %}

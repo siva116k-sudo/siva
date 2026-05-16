@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Profile – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="page-title">👤 My Profile</h1>
+  <p class="page-sub">Hello, {{ user.username }} — here’s your recent activity and preferred routes.</p>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">{{ user.username }}</div><div class="stat-lbl">Username</div></div>
+    <div class="stat-card gold"><div class="stat-num">{{ user.email }}</div><div class="stat-lbl">Email</div></div>
+    <div class="stat-card green"><div class="stat-num">{{ bookings|length }}</div><div class="stat-lbl">Recent Bookings</div></div>
+    <div class="stat-card red"><div class="stat-num">{{ top_routes|length }}</div><div class="stat-lbl">Favorite Routes</div></div>
+    <div class="stat-card"><div class="stat-num">{{ user.points or 0 }}</div><div class="stat-lbl">Loyalty Points</div></div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-hd">❤️ Favorite Routes</div>
+    <div class="card-bd">
+      {% if top_routes %}
+      <ul style="list-style:none;padding:0;margin:0;">
+        {% for route in top_routes %}
+        <li style="margin-bottom:.75rem;"><strong>{{ route.route }}</strong> — {{ route.count }} booking(s)</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">Book tickets to see your top routes here.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-hd">� Saved Passengers</div>
+    <div class="card-bd">
+      {% if passengers %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Age</th><th>Gender</th><th>Mobile</th></tr></thead>
+          <tbody>
+            {% for p in passengers %}
+            <tr>
+              <td>{{ p.full_name }}</td>
+              <td>{{ p.age or '—' }}</td>
+              <td>{{ p.gender or '—' }}</td>
+              <td>{{ p.mobile or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted">Save frequent travelers here to speed up booking.</p>
+      {% endif %}
+    </div>
+    <div class="card-bd">
+      <form method="POST" action="{{ url_for('add_passenger') }}">
+        <div class="frow" style="gap:1rem;flex-wrap:wrap;">
+          <div class="fg" style="flex:1"><label class="fl">Full Name</label><input type="text" name="full_name" class="fc" placeholder="Passenger name" required></div>
+          <div class="fg" style="flex:1"><label class="fl">Age</label><input type="number" name="age" class="fc" placeholder="Age"></div>
+          <div class="fg" style="flex:1"><label class="fl">Gender</label>
+            <select name="gender" class="fc">
+              <option value="">Prefer not to say</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:1"><label class="fl">Mobile</label><input type="text" name="mobile" class="fc" placeholder="Mobile number"></div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-sm mt-2">Save Passenger</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-hd">�🔎 Recent Search History</div>
+    <div class="card-bd">
+      {% if recent_searches %}
+      <ul style="list-style:none;padding:0;margin:0;">
+        {% for item in recent_searches %}
+        <li style="margin-bottom:.75rem;">
+          <a href="{{ url_for('trains') }}?from_station={{ item.from_st|urlencode }}&to_station={{ item.to_st|urlencode }}&journey_date={{ item.journey_date|urlencode }}&return_date={{ item.return_date|urlencode }}&train_type={{ item.train_type|urlencode }}&search_query={{ item.search_query|urlencode }}&sort_by={{ item.sort_by|urlencode }}">
+            {{ item.label }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">No recent searches yet. Search trains to save your latest routes.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-hd">🎫 Recent Activity</div>
+    <div class="card-bd">
+      {% if bookings %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>PNR</th><th>Train</th><th>Route</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for b in bookings %}
+            <tr>
+              <td><a href="{{ url_for('ticket',pnr=b.pnr) }}" class="pnr-link">{{ b.pnr }}</a></td>
+              <td>{{ b.train_name }}</td>
+              <td>{{ b.from_station }} → {{ b.to_station }}</td>
+              <td>{{ b.journey_date }}</td>
+              <td><span class="badge badge-{{ b.status }}">{{ b.status.upper() }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted">No recent bookings yet. Book a train to get started.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

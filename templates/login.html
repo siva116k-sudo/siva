@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Login – RailBook{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-hd"><div class="auth-logo">🔐</div><h2>Welcome Back</h2><p>Sign in to your account</p></div>
+    <div class="auth-bd">
+      <form method="POST">
+        <div class="fg"><label class="fl">Username</label><input type="text" name="username" class="fc" placeholder="Your username" required autofocus></div>
+        <div class="fg"><label class="fl">Password</label><input type="password" name="password" class="fc" placeholder="Your password" required></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Login</button>
+      </form>
+      <div class="auth-ft"><a href="{{ url_for('forgot_password') }}">Forgot your password?</a></div>
+      <div class="auth-ft">New here? <a href="{{ url_for('register') }}">Create an account</a></div>
+      <div class="demo-hint">🔑 Demo — Admin: <strong>admin / admin123</strong></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

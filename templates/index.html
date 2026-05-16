@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}RailBook – Book Train Tickets Online{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>Book Train Tickets<br><span class="gold">Instantly & Easily</span></h1>
+    <p>Search trains, pick your seat, pay securely, and get your PDF ticket — all in minutes.</p>
+    <div class="hero-actions">
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('trains') }}" class="btn btn-gold btn-lg">🔍 Search Trains</a>
+        <a href="{{ url_for('live_map') }}" class="btn btn-outline-white btn-lg">📍 Live Map</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-white btn-lg">My Bookings</a>
+      {% else %}
+        <a href="{{ url_for('register') }}" class="btn btn-gold btn-lg">Get Started Free</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline-white btn-lg">Login</a>
+      {% endif %}
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-num">500+</div><div class="hstat-lbl">Trains</div></div>
+      <div class="hstat"><div class="hstat-num">2M+</div><div class="hstat-lbl">Tickets Booked</div></div>
+      <div class="hstat"><div class="hstat-num">100+</div><div class="hstat-lbl">Stations</div></div>
+      <div class="hstat"><div class="hstat-num">24/7</div><div class="hstat-lbl">Support</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Search -->
+<section class="quick-search-section">
+  <div class="container">
+    <div class="quick-search-card">
+      <h2>🔍 Quick Train Search</h2>
+      <form method="POST" action="{{ url_for('trains') }}">
+        <div class="search-grid">
+          <div class="fg"><label class="fl">From Station</label><input type="text" name="from_station" class="fc" placeholder="e.g. NDLS" style="text-transform:uppercase" required></div>
+          <div class="fg"><label class="fl">To Station</label><input type="text" name="to_station" class="fc" placeholder="e.g. BCT" style="text-transform:uppercase" required></div>
+          <div class="fg"><label class="fl">Journey Date</label><input type="date" name="journey_date" class="fc" required></div>
+          <button type="submit" class="btn btn-primary btn-lg" style="align-self:flex-end">Search →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Trains -->
+<section class="section bg-white">
+  <div class="container">
+    <h2 class="section-title">🚆 Featured Trains</h2>
+    <p class="section-sub">Popular routes available for booking</p>
+    <div class="trains-grid">
+      {% for train in trains %}
+      <div class="train-feature-card">
+        <div class="train-img-wrap">
+          <img src="{{ url_for('static',filename='images/'+train.image) }}" alt="{{ train.train_name }}" onerror="this.src='https://via.placeholder.com/300x160/0a2540/f5a623?text=🚆'">
+          <span class="train-type-badge">{{ train.train_type }}</span>
+        </div>
+        <div class="train-feature-body">
+          <div class="train-feature-name">{{ train.train_name }}</div>
+          <div class="train-feature-route">{{ train.from_station }} → {{ train.to_station }}</div>
+          <div class="train-feature-meta">
+            <span>⏰ {{ train.departure }}</span>
+            <span>💺 {{ train.available_seats }} seats</span>
+            <span class="train-feature-price">₹{{ train.price_per_seat }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center">Why Choose RailBook?</h2>
+    <div class="features-grid">
+      <div class="feat-card"><div class="feat-icon">🔍</div><h3>Smart Search</h3><p>Search by source, destination and date in seconds.</p></div>
+      <div class="feat-card"><div class="feat-icon">🪑</div><h3>Seat Selection</h3><p>Interactive visual seat map — pick exactly where you sit.</p></div>
+      <div class="feat-card"><div class="feat-icon">💳</div><h3>Secure Payment</h3><p>Safe simulated card payment with instant confirmation.</p></div>
+      <div class="feat-card"><div class="feat-icon">📄</div><h3>PDF Tickets</h3><p>Professional PDF ticket generated and emailed instantly.</p></div>
+      <div class="feat-card"><div class="feat-icon">🔎</div><h3>PNR Status</h3><p>Check any PNR without login — share with co-travellers.</p></div>
+      <div class="feat-card"><div class="feat-icon">❌</div><h3>Easy Cancellation</h3><p>Cancel bookings from your dashboard in one click.</p></div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('input[name="from_station"],input[name="to_station"]').forEach(el=>{
+  el.addEventListener('input',()=>el.value=el.value.toUpperCase());
+});
+document.querySelector('input[name="journey_date"]').min=new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

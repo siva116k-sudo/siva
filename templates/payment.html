@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Payment – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:580px">
+  <h1 class="page-title">💳 Secure Payment</h1>
+
+  <div class="pay-summary">
+    <div class="pay-sum-title">🎫 Booking Summary</div>
+    <div class="pay-row"><span>Train</span><span>{{ train.train_name }}</span></div>
+    <div class="pay-row"><span>Route</span><span>{{ train.from_station }} → {{ train.to_station }}</span></div>
+    <div class="pay-row"><span>Departure</span><span>{{ train.departure }}</span></div>
+    <div class="pay-row"><span>Journey Date</span><span>{{ draft.journey_date }}</span></div>
+    <div class="pay-row"><span>Seats ({{ draft.seats|length }})</span><span>{{ draft.seats|join(', ') }}</span></div>
+    <div class="pay-row"><span>Price/Seat</span><span>₹{{ draft.seat_price or train.price_per_seat }}</span></div>
+    <div class="pay-row"><span>Promo Code</span><span>{{ draft.promo_code or 'None' }}</span></div>
+    {% if draft.discount and draft.discount > 0 %}
+    <div class="pay-row"><span>Promo Discount</span><span>-₹{{ draft.discount }}</span></div>
+    {% endif %}
+    {% if user.points %}
+    <div class="pay-row"><span>Available Points</span><span>{{ user.points }}</span></div>
+    {% if draft.points_redeemed and draft.points_redeemed > 0 %}
+    <div class="pay-row"><span>Points Redeemed</span><span>-₹{{ draft.points_redeemed }}</span></div>
+    {% endif %}
+    {% endif %}
+    <div class="pay-total"><span>Total</span><span>₹{{ draft.final_total if draft.final_total is not none else draft.total }}</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">💳 Card Details</div>
+    <div class="card-bd">
+      <div class="secure-note">🔒 Simulated payment — no real money charged.<br>Use any 16-digit card. Cards ending in <strong>0000</strong> → payment fails (for testing).</div>
+      <form method="POST" id="payForm">
+        <div class="fg"><label class="fl">Promo Code</label>
+          <input type="text" name="promo_code" class="fc" placeholder="e.g. RAIL10" value="{{ draft.promo_code }}"></div>
+        {% if user.points %}
+        <div class="fg"><label class="fl">Redeem Points</label>
+          <input type="number" name="use_points" class="fc" min="0" max="{{ user.points }}" step="1" placeholder="0" value="{{ draft.points_redeemed or 0 }}">
+        </div>
+        <div class="secure-note" style="background:#e0f2fe;border-color:#93c5fd;color:#0c4a6e;">
+          Use points to reduce the final fare. 1 point = ₹1.
+        </div>
+        {% endif %}
+        <div class="secure-note" style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;">Available offers: RAIL10, FIRST5, BRIDGE20</div>
+        <div class="fg"><label class="fl">Card Number</label>
+          <input type="text" name="card_number" id="cardNum" class="fc" placeholder="1234 5678 9012 3456" maxlength="19" required></div>
+        <div class="fg"><label class="fl">Cardholder Name</label>
+          <input type="text" name="card_name" class="fc" placeholder="Name as on card" required></div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Expiry</label><input type="text" name="expiry" id="expiry" class="fc" placeholder="MM/YY" maxlength="5" required></div>
+          <div class="fg"><label class="fl">CVV</label><input type="password" name="cvv" class="fc" placeholder="•••" maxlength="3" required></div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-lg btn-block mt-2" id="payBtn">
+          💳 Pay ₹{{ draft.final_total if draft.final_total is not none else draft.total }} & Confirm
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('cardNum').addEventListener('input',function(e){
+  let v=e.target.value.replace(/\D/g,'').substring(0,16);
+  e.target.value=v.replace(/(.{4})/g,'$1 ').trim();
+});
+document.getElementById('expiry').addEventListener('input',function(e){
+  let v=e.target.value.replace(/\D/g,'').substring(0,4);
+  if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2);
+  e.target.value=v;
+});
+document.getElementById('payForm').addEventListener('submit',function(){
+  const b=document.getElementById('payBtn');
+  b.textContent='⏳ Processing payment...';b.disabled=true;
+});
+</script>
+{% endblock %}

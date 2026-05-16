@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{% block title %}RailBook{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚆</text></svg>">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="{{ url_for('index') }}" class="brand">🚆 RailBook</a>
+  <div class="nav-links">
+    {% if session.get('user_id') %}
+      {% if session.get('is_admin') %}
+        <a href="{{ url_for('admin') }}">Admin Panel</a>
+      {% else %}
+        <a href="{{ url_for('trains') }}">Search Trains</a>
+        <a href="{{ url_for('dashboard') }}">My Bookings</a>
+        <a href="{{ url_for('profile') }}">Profile</a>
+        <a href="{{ url_for('live_map') }}">Live Map</a>
+        <a href="{{ url_for('pnr_status') }}">PNR Status</a>
+      {% endif %}
+      <span class="nav-user">👤 {{ session.username }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-nav">Logout</a>
+    {% else %}
+      <a href="{{ url_for('pnr_status') }}">PNR Status</a>
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}" class="btn-nav">Register</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for cat,msg in messages %}
+    <div class="flash flash-{{ cat }}">
+      {% if cat=='success' %}✅{% elif cat=='error' %}❌{% else %}ℹ️{% endif %}
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>🚆 <strong>RailBook</strong> — Railway Ticket Reservation System</div>
+    <div style="color:var(--muted);font-size:.8rem;">© 2024 RailBook. All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

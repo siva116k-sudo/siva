@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Train</title>
+</head>
+<body>
+    <h2>Edit Train</h2>
+    <form method="POST">
+        <label>Name:</label><input type="text" name="name" value="{{ train.name }}" required><br>
+        <label>Source:</label><input type="text" name="source" value="{{ train.source }}" required><br>
+        <label>Destination:</label><input type="text" name="destination" value="{{ train.destination }}" required><br>
+        <label>Seats:</label><input type="number" name="seats" value="{{ train.seats }}" required><br>
+        <button type="submit">Update Train</button>
+    </form>
+</body>
+</html>

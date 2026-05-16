@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Admin – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="page-title">🛡️ Admin Dashboard</h1>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">{{ stats.trains }}</div><div class="stat-lbl">🚆 Trains</div></div>
+    <div class="stat-card gold"><div class="stat-num">{{ stats.bookings }}</div><div class="stat-lbl">🎫 Bookings</div></div>
+    <div class="stat-card green"><div class="stat-num">{{ stats.users }}</div><div class="stat-lbl">👤 Users</div></div>
+    <div class="stat-card red"><div class="stat-num">₹{{ "%.0f"|format(stats.revenue) }}</div><div class="stat-lbl">💰 Revenue</div></div>
+  </div>
+
+  <div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="stat-num">{{ stats.waitlist }}</div><div class="stat-lbl">⏳ Waitlist</div></div>
+    <div class="stat-card"><div class="stat-num">{{ stats.popular_route }}</div><div class="stat-lbl">Top Route</div></div>
+    <div class="stat-card"><div class="stat-num">{{ stats.popular_train }}</div><div class="stat-lbl">Top Train</div></div>
+    <div class="stat-card"><div class="stat-num">{{ stats.average_occupancy }}%</div><div class="stat-lbl">Avg Occupancy</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs"><div class="tab active" onclick="showTab('trains',this)">🚆 Trains</div><div class="tab" onclick="showTab('bookings',this)">🎫 Bookings</div><div class="tab" onclick="showTab('users',this)">👤 Users</div><div class="tab" onclick="showTab('add',this)">➕ Add Train</div></div>
+
+  <!-- Trains -->
+  <div id="tab-trains" class="tab-content active">
+    <div class="card"><div class="table-wrap">
+      <table>
+        <thead><tr><th>No.</th><th>Name</th><th>Route</th><th>Timings</th><th>Seats</th><th>Available</th><th>Price</th><th>Type</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for t in trains %}
+          <tr>
+            <td><strong>{{ t.train_no }}</strong></td><td>{{ t.train_name }}</td>
+            <td>{{ t.from_station }} → {{ t.to_station }}</td>
+            <td class="muted">{{ t.departure }} – {{ t.arrival }}</td>
+            <td>{{ t.total_seats }}</td>
+            <td class="{% if t.available_seats>10 %}green{% elif t.available_seats>0 %}orange{% else %}red{% endif %}">{{ t.available_seats }}</td>
+            <td>₹{{ t.price_per_seat }}</td>
+            <td><span class="train-type-badge">{{ t.train_type }}</span></td>
+            <td>
+              <form method="POST" action="{{ url_for('delete_train',tid=t.id) }}" onsubmit="return confirm('Delete {{ t.train_name }}?')">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- Bookings -->
+  <div id="tab-bookings" class="tab-content">
+    <div class="card"><div class="table-wrap">
+      <table>
+        <thead><tr><th>PNR</th><th>User</th><th>Train</th><th>Date</th><th>Seats</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr>
+            <td><a href="{{ url_for('ticket',pnr=b.pnr) }}" class="pnr-link">{{ b.pnr }}</a></td>
+            <td>{{ b.username }}</td><td>{{ b.train_name }}</td>
+            <td>{{ b.journey_date }}</td><td>{{ b.seats }}</td>
+            <td>₹{{ b.total_price }}</td>
+            <td><span class="badge badge-{{ b.status }}">{{ b.status.upper() }}</span></td>
+            <td>
+              {% if b.status == 'confirmed' %}
+              <form method="POST" action="{{ url_for('update_booking', pnr=b.pnr) }}" onsubmit="return confirm('Cancel booking {{ b.pnr }}?')">
+                <input type="hidden" name="action" value="cancel">
+                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+              </form>
+              {% elif b.status == 'cancelled' %}
+              <form method="POST" action="{{ url_for('update_booking', pnr=b.pnr) }}" onsubmit="return confirm('Re-confirm booking {{ b.pnr }}?')">
+                <input type="hidden" name="action" value="confirm">
+                <button type="submit" class="btn btn-primary btn-sm">Reconfirm</button>
+              </form>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- Users -->
+  <div id="tab-users" class="tab-content">
+    <div class="card"><div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td><td><strong>{{ u.username }}</strong></td><td>{{ u.email }}</td>
+            <td><span class="badge {% if u.is_admin %}badge-admin{% else %}badge-confirmed{% endif %}">{% if u.is_admin %}ADMIN{% else %}USER{% endif %}</span></td>
+            <td class="muted">{{ u.created_at[:10] if u.created_at else '—' }}</td>
+            <td>
+              {% if not u.is_admin %}
+              <form method="POST" action="{{ url_for('delete_user',uid=u.id) }}" onsubmit="return confirm('Delete user {{ u.username }}?')">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- Add Train -->
+  <div id="tab-add" class="tab-content">
+    <div class="card" style="max-width:700px">
+      <div class="card-hd">➕ Add New Train</div>
+      <div class="card-bd">
+        <form method="POST" action="{{ url_for('add_train') }}">
+          <div class="frow">
+            <div class="fg"><label class="fl">Train Number</label><input type="text" name="train_no" class="fc" placeholder="e.g. 12009" required></div>
+            <div class="fg"><label class="fl">Train Name</label><input type="text" name="train_name" class="fc" placeholder="e.g. Express Name" required></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label class="fl">From (code)</label><input type="text" name="from_station" class="fc" placeholder="NDLS" style="text-transform:uppercase" required></div>
+            <div class="fg"><label class="fl">To (code)</label><input type="text" name="to_station" class="fc" placeholder="BCT" style="text-transform:uppercase" required></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label class="fl">Departure</label><input type="time" name="departure" class="fc" required></div>
+            <div class="fg"><label class="fl">Arrival</label><input type="time" name="arrival" class="fc" required></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label class="fl">Total Seats</label><input type="number" name="total_seats" class="fc" placeholder="60" min="10" max="500" required></div>
+            <div class="fg"><label class="fl">Price/Seat (₹)</label><input type="number" name="price_per_seat" class="fc" placeholder="800" min="100" required></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label class="fl">Train Type</label>
+              <select name="train_type" class="fc">
+                <option>Express</option><option>Shatabdi</option><option>Rajdhani</option>
+                <option>Duronto</option><option>Vande Bharat</option><option>Tejas</option><option>Intercity</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Image File</label>
+              <select name="image" class="fc">
+                <option value="rajdhani.jpg">rajdhani.jpg</option>
+                <option value="shatabdi.jpg">shatabdi.jpg</option>
+                <option value="vande_bharat.jpg">vande_bharat.jpg</option>
+                <option value="duronto.jpg">duronto.jpg</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-gold btn-lg btn-block mt-2">➕ Add Train</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function showTab(name,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+document.querySelectorAll('input[name="from_station"],input[name="to_station"]').forEach(el=>{
+  el.addEventListener('input',()=>el.value=el.value.toUpperCase());
+});
+</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Waitlist – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="page-title">Waitlist</h1>
+  <p class="page-sub">Your request to join the waitlist for <strong>{{ train.train_name }} (#{{ train.train_no }})</strong> on <strong>{{ journey_date }}</strong> has been received.</p>
+
+  <div class="card mt-3">
+    <div class="card-hd">Train Details</div>
+    <div class="card-bd">
+      <p><strong>Route:</strong> {{ train.from_station }} → {{ train.to_station }}</p>
+      <p><strong>Departure:</strong> {{ train.departure }} · <strong>Arrival:</strong> {{ train.arrival }}</p>
+      <p><strong>Price per seat:</strong> ₹{{ train.price_per_seat }}</p>
+      {% if position %}
+      <p><strong>Waitlist Position:</strong> {{ position }}</p>
+      {% endif %}
+      <p><strong>Current status:</strong>
+        {% if train.available_seats > 0 %}
+        Seats available, we will notify you if a better fare opens.
+        {% else %}
+        Currently fully booked. You are on the waitlist and will be confirmed if seats open.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('waitlist', train_id=train.id) }}">
+    <input type="hidden" name="journey_date" value="{{ journey_date }}">
+    <button type="submit" class="btn btn-gold">Join Waitlist</button>
+    <a href="{{ url_for('trains') }}" class="btn btn-outline ml-2">Search More Trains</a>
+    <a href="{{ url_for('profile') }}" class="btn btn-outline ml-2">My Profile</a>
+  </form>
+</div>
+{% endblock %}

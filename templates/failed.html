@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Payment Failed – RailBook{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:520px;text-align:center">
+  <div class="result-icon fail-icon">❌</div>
+  <h1 style="color:var(--red);margin:.5rem 0">Payment Failed</h1>
+  <p style="color:var(--muted)">{{ error }}</p>
+  <div class="fail-hint">
+    <strong>Tip:</strong> Any 16-digit card works. Cards ending in <code>0000</code> are always declined (for testing).
+  </div>
+  <div class="confirm-actions">
+    <a href="javascript:history.back()" class="btn btn-gold btn-lg">← Try Again</a>
+    <a href="{{ url_for('trains') }}" class="btn btn-outline btn-lg">Search Trains</a>
+  </div>
+</div>
+{% endblock %}
